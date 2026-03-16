@@ -1,0 +1,106 @@
+Backend Schema – AH Restaurant/Hotel
+===================================
+
+Scope
+-----
+- Only real backend entities: EVENTS and BOOKINGS.
+- Everything else (rooms, dishes, homepage content, etc.) can stay as front-end dummy data for now.
+- No customer user accounts; reserve space for admin-only management via a single shared secret / passcode or admin panel.
+
+1. EVENTS
+---------
+
+Table / Collection: events
+
+Fields
+- id (string, primary key)
+- title (string)
+- date (string or date)
+- time (string)
+- location (string)
+- desc (string)              // short description
+- longDesc (string, optional)
+- leadImage (string)         // image URL
+- tickets (array of objects)
+    - type (string)          // e.g. "General Admission", "VIP Table"
+    - price (number)
+
+Minimum API
+- GET   /events                  -> list all events
+- GET   /events/:id              -> get single event
+- POST  /events   (ADMIN ONLY)   -> create new event
+- PUT   /events/:id (ADMIN ONLY) -> update event
+- DELETE /events/:id (ADMIN ONLY)-> delete event
+
+Admin Notes
+- Protect POST/PUT/DELETE with a single admin secret/passcode (no user accounts).
+- Frontend Admin pages already: NewEventPage (create), EditEventPage (edit).
+
+2. BOOKINGS
+-----------
+
+Table / Collection: bookings
+
+Fields
+- id (string, primary key)       // booking reference shown to user
+- type ("room" | "dining")
+- status ("COMPLETED" | "CONFIRMED" | "PENDING" | "CANCELLED")
+- title (string)                 // display title, e.g. "Room #301" or table label
+- subtitle (string)              // room name, dining context
+- dateRange (string)             // e.g. "Oct 15, 2024 - Oct 20, 2024" or single date+time
+- guests (number)
+- placedAt (string)              // human-readable “placed X ago” or timestamp
+- amount (number)                // total price
+
+Optional Extensions (to support detailed view)
+- guestFirstName (string)
+- guestLastName (string)
+- guestEmail (string)
+- guestPhone (string)
+- roomId or tableId (string, optional depending on type)
+- checkInDate / checkOutDate (date, room type)
+- diningDate / diningTime (date + time, dining type)
+- specialRequests (string, optional)
+
+Minimum API
+- GET   /bookings                     -> list all bookings (ADMIN)
+- GET   /bookings/:id                 -> get booking detail (used by guest + admin)
+- POST  /bookings                     -> create booking (guest flow from BookPage)
+- PATCH /bookings/:id/status (ADMIN)  -> update status (e.g., confirm, cancel)
+
+Guest-Facing Flows
+- "Check booking" form uses: reference (id) + email to locate booking.
+- "View booking" page uses GET /bookings/:id to show full details.
+
+Admin-Facing Flows (no accounts)
+- Admin login uses a shared passcode; on success, frontend can store a token or header value.
+- Admin can:
+  - View all bookings with filters (room/dining) via GET /bookings.
+  - Open a single booking detail via GET /bookings/:id.
+  - Change status via PATCH /bookings/:id/status.
+
+3. AUTH / ADMIN (NO USER ACCOUNTS)
+----------------------------------
+
+We do NOT manage real user accounts. Instead:
+
+- Environment variable ADMIN_PASSCODE (or similar) on the server.
+- Endpoint: POST /admin/login
+  - body: { passcode: string }
+  - if passcode matches ADMIN_PASSCODE -> return short-lived admin token (e.g. JWT or opaque string).
+- Frontend:
+  - AdminLoginForm sends passcode to /admin/login.
+  - On success, store token in memory/local storage and include it as Authorization header for all admin-only endpoints.
+
+No persistence of admins is needed; only the secret.
+
+4. NON-BACKEND FEATURES (STAY DUMMY)
+------------------------------------
+
+The following can remain static/front-end driven for now:
+- Rooms catalog + room instances + policies.
+- Dishes / menu and dining FAQs.
+- Homepage sections (hero, testimonials, etc.).
+- About, FAQ, Contact content.
+
+These can later be moved into backend-managed content if needed, but current scope is strictly EVENTS + BOOKINGS + minimal ADMIN auth.
