@@ -19,7 +19,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const templateDir = path.join(__dirname, "templates");
+const templateDir = path.join(process.cwd(), "templates");
+console.log(templateDir);
 
 // Helper to read HTML file
 const readTemplate = (templateName: string): string => {
