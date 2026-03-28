@@ -66,8 +66,8 @@ export const sendEmail = async (
     }
 
     await transporter.sendMail({
-      from: `"AH Hotel & Residences" <${
-        process.env.SMTP_USER || "no-reply@ahhotel.com"
+      from: `"Amethyst Suites & Dining" <${
+        process.env.SMTP_USER || "no-reply@amethysthotel.com"
       }>`,
       to,
       subject,
@@ -97,7 +97,7 @@ export const sendBookingConfirmation = async (
     ...data,
     year: new Date().getFullYear(),
   });
-  await sendEmail(to, "Booking Confirmation - AH Hotel & Residences", html);
+  await sendEmail(to, "Booking Confirmation - Amethyst Suites & Dining", html);
 };
 
 export const sendTicketPurchaseConfirmation = async (
@@ -118,7 +118,7 @@ export const sendTicketPurchaseConfirmation = async (
     ...data,
     year: new Date().getFullYear(),
   });
-  await sendEmail(to, "Your Tickets - AH Hotel & Residences", html);
+  await sendEmail(to, "Your Tickets - Amethyst Suites & Dining", html);
 };
 
 export const sendContactFormSubmission = async (

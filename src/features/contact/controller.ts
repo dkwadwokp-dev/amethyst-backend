@@ -8,7 +8,7 @@ export class ContactController {
       const data = contactFormSchema.parse(req.body);
 
       // Send email to admin
-      const adminEmail = process.env.ADMIN_EMAIL || "admin@ahhotel.com";
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@amethysthotel.com";
 
       await sendContactFormSubmission(adminEmail, data);
 

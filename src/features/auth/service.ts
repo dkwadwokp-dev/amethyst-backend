@@ -30,7 +30,7 @@ export function loginAdmin(
 
   const payload: AdminTokenPayload = {
     id: "admin",
-    name: "AH HOTEL",
+    name: "Amethyst Suites",
   };
 
   const token = jwt.sign(payload, JWT_SECRET, {
