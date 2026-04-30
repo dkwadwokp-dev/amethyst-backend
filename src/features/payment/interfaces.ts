@@ -49,3 +49,39 @@ export interface PaystackVerificationResponse {
     };
   };
 }
+
+export interface KorapayCheckoutParams {
+  amount: number;
+  currency: string;
+  reference: string;
+  userEmail: string;
+  userName: string;
+}
+
+export interface KorapayResponse {
+  status: boolean;
+  message: string;
+  data: {
+    checkout_url: string;
+    reference: string;
+  };
+}
+
+export interface KorapayVerificationResponse {
+  status: boolean;
+  message: string;
+  data: {
+    id: string;
+    reference: string;
+    status: string;
+    amount: number;
+    currency: string;
+    customer: {
+      email: string;
+      name: string;
+    };
+    metadata: {
+      user_id: string;
+    };
+  };
+}

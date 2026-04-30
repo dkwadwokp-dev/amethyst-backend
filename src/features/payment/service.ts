@@ -3,10 +3,15 @@ import type {
   CreateCheckoutLinkParams,
   PaystackResponse,
   PaystackVerificationResponse,
+  KorapayCheckoutParams,
+  KorapayResponse,
+  KorapayVerificationResponse,
 } from "./interfaces";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const KORAPAY_SECRET_KEY = process.env.KORAPAY_SECRET_KEY;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 
 export class PaymentService {
   /**
@@ -99,6 +104,106 @@ export class PaymentService {
         error.response?.data || error.message,
       );
       throw new Error("An error occurred during payment verification process");
+    }
+  }
+
+  /**
+   * Create a Korapay checkout URL
+   */
+  async createKorapayCheckoutUrl(
+    params: KorapayCheckoutParams,
+  ): Promise<KorapayResponse> {
+    const { amount, currency, reference, userEmail, userName } = params;
+
+    if (!KORAPAY_SECRET_KEY) {
+      console.warn("KORAPAY_SECRET_KEY environment variable is not set");
+      throw new Error("Korapay payment provider not configured");
+    }
+
+    try {
+      const redirectUrl = `${FRONTEND_URL}/my_account/deposit`;
+      const notificationUrl = `${SERVER_URL}/api/transactions/webhook/korapay`;
+
+      const data = {
+        amount,
+        currency,
+        reference,
+        redirect_url: redirectUrl,
+        notification_url: notificationUrl,
+        customer: {
+          email: userEmail,
+          name: userName,
+        },
+      };
+
+      const headers = {
+        Authorization: `Bearer ${KORAPAY_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      };
+
+      const response = await axios.post(
+        "https://api.korapay.com/merchant/api/v1/charges/initialize",
+        data,
+        { headers },
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error creating Korapay checkout URL:",
+        error.response?.data || error.message,
+      );
+      throw new Error("Failed to create Korapay checkout URL");
+    }
+  }
+
+  /**
+   * Verify a Korapay payment using the reference
+   */
+  async verifyKorapayPayment(
+    reference: string,
+    transactionAmount: number,
+  ): Promise<KorapayVerificationResponse | null> {
+    if (!KORAPAY_SECRET_KEY) {
+      console.warn("KORAPAY_SECRET_KEY environment variable is not set");
+      throw new Error("Korapay payment provider not configured");
+    }
+
+    try {
+      const response = await axios.get(
+        `https://api.korapay.com/merchant/api/v1/charges/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${KORAPAY_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const data = response.data;
+
+      if (
+        data.status === true &&
+        data.data?.status === "success" &&
+        data.data?.amount >= transactionAmount
+      ) {
+        // Assuming completeKorapayTransaction and failTransaction are implemented elsewhere
+        // return completeKorapayTransaction(reference, transactionAmount, data.data);
+        return data;
+      }
+
+      if (data.data?.status === "failed") {
+        // return failTransaction(reference);
+        return null;
+      }
+
+      return null;
+    } catch (error: any) {
+      console.error(
+        "Error verifying Korapay payment:",
+        error.response?.data || error.message,
+      );
+      throw new Error("An error occurred during Korapay payment verification");
     }
   }
 }

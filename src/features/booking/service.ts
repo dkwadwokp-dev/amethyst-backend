@@ -114,13 +114,24 @@ export class BookingService {
     let payment = null;
 
     if (booking.type === "room" && booking.amount > 0) {
-      payment = await paymentService.createPaymentLink({
-        id: booking.reference,
-        email: booking.email,
+      const korapayPayment = await paymentService.createKorapayCheckoutUrl({
         amount: booking.amount,
-        name: `${booking.firstName} ${booking.lastName}`,
-        callbackPath: "/verify-booking-payment",
+        currency: "GHS",
+        reference: booking.reference,
+        userEmail: booking.email,
+        userName: `${booking.firstName} ${booking.lastName}`,
       });
+
+      // Normalize the response to match Paystack structure
+      payment = {
+        status: korapayPayment.status,
+        message: korapayPayment.message,
+        data: {
+          authorization_url: korapayPayment.data.checkout_url,
+          access_code: korapayPayment.data.reference,
+          reference: korapayPayment.data.reference,
+        },
+      };
     }
 
     return { booking, payment };
@@ -202,14 +213,13 @@ export class BookingService {
       return booking;
     }
 
-    const payment = await paymentService.validatePayment(transactionReference);
+    const payment = await paymentService.verifyKorapayPayment(
+      transactionReference,
+      booking.amount,
+    );
 
-    if (!payment.status || payment.data.status !== "success") {
-      throw new Error(
-        `Payment verification failed: ${
-          payment.data?.gateway_response || "Unknown status"
-        }`,
-      );
+    if (!payment || payment.data.status !== "success") {
+      throw new Error("Payment verification failed");
     }
 
     booking.status = "PROCESSED";
@@ -260,14 +270,25 @@ export class BookingService {
     // Generate a unique transaction reference for this attempt
     const transactionReference = `${booking.reference}-${Date.now()}`;
 
-    const payment = await paymentService.createPaymentLink({
-      id: transactionReference,
-      email: booking.email,
+    const payment = await paymentService.createKorapayCheckoutUrl({
       amount: booking.amount,
-      name: `${booking.firstName} ${booking.lastName}`,
-      callbackPath: `/verify-booking-payment`,
+      currency: "GHS",
+      reference: transactionReference,
+      userEmail: booking.email,
+      userName: `${booking.firstName} ${booking.lastName}`,
     });
 
-    return payment;
+    // Normalize the response
+    const normalizedPayment = {
+      status: payment.status,
+      message: payment.message,
+      data: {
+        authorization_url: payment.data.checkout_url,
+        access_code: payment.data.reference,
+        reference: payment.data.reference,
+      },
+    };
+
+    return normalizedPayment;
   }
 }
