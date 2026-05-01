@@ -56,6 +56,7 @@ export interface KorapayCheckoutParams {
   reference: string;
   userEmail: string;
   userName: string;
+  callbackPath?: string;
 }
 
 export interface KorapayResponse {

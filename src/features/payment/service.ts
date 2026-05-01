@@ -113,7 +113,8 @@ export class PaymentService {
   async createKorapayCheckoutUrl(
     params: KorapayCheckoutParams,
   ): Promise<KorapayResponse> {
-    const { amount, currency, reference, userEmail, userName } = params;
+    const { amount, currency, reference, userEmail, userName, callbackPath } =
+      params;
 
     if (!KORAPAY_SECRET_KEY) {
       console.warn("KORAPAY_SECRET_KEY environment variable is not set");
@@ -128,7 +129,7 @@ export class PaymentService {
         amount,
         currency,
         reference,
-        redirect_url: redirectUrl,
+        redirect_url: `${FRONTEND_URL}${callbackPath || "/verify-payment"}`,
         notification_url: notificationUrl,
         customer: {
           email: userEmail,

@@ -120,6 +120,7 @@ export class BookingService {
         reference: booking.reference,
         userEmail: booking.email,
         userName: `${booking.firstName} ${booking.lastName}`,
+        callbackPath: `/verify-booking-payment?txref=${booking.reference}`, // This will be used to verify payment and update booking status
       });
 
       // Normalize the response to match Paystack structure

@@ -138,6 +138,7 @@ export class EventService {
       reference,
       userEmail: input.email,
       userName: input.fullName,
+      callbackPath: `/verify-ticket-payment?reference=${reference}`, // This will be used to verify payment and update ticket purchase status
     });
 
     // Normalize the response to match Paystack structure
