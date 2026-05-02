@@ -37,11 +37,9 @@ export function requireAdmin(
       req.user = decoded;
       return next();
     } catch (err) {
-      console.error("[auth] Token verification failed");
       return res.status(401).json({ message: "Invalid or expired token" });
     }
   } catch (err) {
-    console.error("[auth] requireAdmin error", err);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
