@@ -13,12 +13,12 @@ function generateReference(): string {
 }
 
 const ROOM_PRICES: Record<string, number> = {
-  rm_01: 150, // THE STANDARD ROOM
-  rm_02: 220, // THE DELUXE ROOM
+  rm_01: 180, // THE STANDARD ROOM
+  rm_02: 300, // THE DELUXE ROOM
   rm_03: 450, // THE EXECUTIVE SUITE
-  rm_04: 520, // THE FAMILY CONNECT ROOM
-  rm_05: 1200, // THE PRESIDENTIAL SUITE
-  rm_06: 800, // THE HONEYMOON SUITE
+  rm_04: 600, // THE FAMILY CONNECT ROOM
+  rm_05: 900, // THE PRESIDENTIAL SUITE
+  rm_06: 1200, // THE HONEYMOON SUITE
 };
 
 export class BookingService {
