@@ -122,14 +122,13 @@ export class PaymentService {
     }
 
     try {
-      const redirectUrl = `${FRONTEND_URL}/my_account/deposit`;
       const notificationUrl = `${SERVER_URL}/api/transactions/webhook/korapay`;
 
       const data = {
         amount,
         currency,
         reference,
-        redirect_url: `${FRONTEND_URL}${callbackPath || "/verify-payment"}`,
+        redirect_url: `${SERVER_URL}${callbackPath || "/verify-payment"}`,
         notification_url: notificationUrl,
         customer: {
           email: userEmail,

@@ -2,15 +2,7 @@ import { BookingModel } from "./model";
 import { paymentService } from "../payment/service";
 import type { CreateBookingInput, BookingStatus } from "./schema";
 import { sendBookingConfirmation } from "../shared/email.service";
-
-function generateReference(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let ref = "";
-  for (let i = 0; i < 8; i++) {
-    ref += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return ref;
-}
+import { generateReference } from "../shared/utils";
 
 const ROOM_PRICES: Record<string, number> = {
   rm_01: 180, // THE STANDARD ROOM
@@ -23,7 +15,7 @@ const ROOM_PRICES: Record<string, number> = {
 
 export class BookingService {
   async createBooking(input: CreateBookingInput) {
-    const reference = generateReference();
+    const reference = generateReference("BK-", 8);
     const guests =
       typeof input.guests === "string"
         ? parseInt(input.guests, 10)
@@ -120,7 +112,7 @@ export class BookingService {
         reference: booking.reference,
         userEmail: booking.email,
         userName: `${booking.firstName} ${booking.lastName}`,
-        callbackPath: `/verify-booking-payment?txref=${booking.reference}`, // This will be used to verify payment and update booking status
+        callbackPath: `/verify-payment?txref=${booking.reference}`, // This will be used to verify payment and update booking status
       });
 
       // Normalize the response to match Paystack structure

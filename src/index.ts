@@ -18,6 +18,28 @@ app.use("/api/bookings", bookingRouter);
 app.use("/api/events", eventRouter);
 app.use("/api/contact", contactRouter);
 
+app.get("/verify-payment", async (req, res) => {
+  const { reference: ref } = req.query;
+
+  if (!ref || typeof ref !== "string") {
+    return res.status(400).json({ error: "Reference is required" });
+  }
+
+  if (ref?.toLowerCase().startsWith("py-")) {
+    res.redirect(
+      `https://amethystsnd.com/verify-booking-payment?reference=${ref}&txref=${ref}`,
+    );
+  } else if (ref?.toLowerCase().startsWith("bk-")) {
+    res.redirect(
+      `https://amethystsnd.com/verify-ticket-payment?reference=${ref}&txref=${ref}`,
+    );
+  } else {
+    res.redirect(
+      `https://afrik.bet/my_account/deposits?reference=${ref}&txref=${ref}`,
+    );
+  }
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
