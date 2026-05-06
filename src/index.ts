@@ -35,7 +35,7 @@ app.get("/verify-payment", async (req, res) => {
     );
   } else {
     res.redirect(
-      `https://afrik.bet/my_account/deposits?reference=${ref}&txref=${ref}`,
+      `https://afrik.bet/my_account/deposit?reference=${ref}&txref=${ref}`,
     );
   }
 });
