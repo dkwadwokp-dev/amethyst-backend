@@ -206,12 +206,13 @@ export class BookingService {
       return booking;
     }
 
-    const payment = await paymentService.verifyKorapayPayment(
-      transactionReference,
-      booking.amount,
-    );
+    const payment = await paymentService.validatePayment(transactionReference);
 
-    if (!payment || payment.data.status !== "success") {
+    if (
+      !payment ||
+      payment.status !== true ||
+      payment.data.status !== "success"
+    ) {
       throw new Error("Payment verification failed");
     }
 
@@ -263,25 +264,14 @@ export class BookingService {
     // Generate a unique transaction reference for this attempt
     const transactionReference = `${booking.reference}-${Date.now()}`;
 
-    const payment = await paymentService.createKorapayCheckoutUrl({
+    const payment = await paymentService.createPaymentLink({
       amount: booking.amount,
-      currency: "GHS",
-      reference: transactionReference,
-      userEmail: booking.email,
-      userName: `${booking.firstName} ${booking.lastName}`,
+      id: transactionReference,
+      email: booking.email,
+      name: `${booking.firstName} ${booking.lastName}`,
+      callbackPath: "/verify-booking-payment",
     });
 
-    // Normalize the response
-    const normalizedPayment = {
-      status: payment.status,
-      message: payment.message,
-      data: {
-        authorization_url: payment.data.checkout_url,
-        access_code: payment.data.reference,
-        reference: payment.data.reference,
-      },
-    };
-
-    return normalizedPayment;
+    return payment;
   }
 }

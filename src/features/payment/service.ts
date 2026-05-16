@@ -35,7 +35,7 @@ export class PaymentService {
       const data = {
         email,
         amount: amountInLowestUnit,
-        callback_url: `${FRONTEND_URL}${callbackPath || "/verify-payment"}`,
+        callback_url: `${SERVER_URL}${callbackPath || "/verify-payment"}`,
         reference: id,
         metadata: {
           custom_fields: [

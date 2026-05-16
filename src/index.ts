@@ -19,7 +19,7 @@ app.use("/api/events", eventRouter);
 app.use("/api/contact", contactRouter);
 
 app.get("/verify-payment", async (req, res) => {
-  const { reference: ref } = req.query;
+  const { reference: ref  } = req.query;
 
   if (!ref || typeof ref !== "string") {
     return res.status(400).json({ error: "Reference is required" });

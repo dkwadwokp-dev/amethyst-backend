@@ -132,27 +132,15 @@ export class EventService {
       status: "PENDING",
     });
 
-    const payment = await paymentService.createKorapayCheckoutUrl({
+    const payment = await paymentService.createPaymentLink({
       amount,
-      currency: "GHS",
-      reference,
-      userEmail: input.email,
-      userName: input.fullName,
-      callbackPath: `/verify-payment?reference=${reference}`, // This will be used to verify payment and update ticket purchase status
+      id: reference,
+      email: input.email,
+      name: input.fullName,
+      callbackPath: `/verify-payment`, // This will be used to verify payment and update ticket purchase status
     });
 
-    // Normalize the response to match Paystack structure
-    const normalizedPayment = {
-      status: payment.status,
-      message: payment.message,
-      data: {
-        authorization_url: payment.data.checkout_url,
-        access_code: payment.data.reference,
-        reference: payment.data.reference,
-      },
-    };
-
-    return { purchase, payment: normalizedPayment };
+    return { purchase, payment };
   }
 
   async getTicketsByEmail(email: string) {
@@ -193,13 +181,14 @@ export class EventService {
     }
 
     const verifyRef = purchase.reference || reference;
-    const payment = await paymentService.verifyKorapayPayment(
-      verifyRef,
-      purchase.amount,
-    );
+    const payment = await paymentService.validatePayment(verifyRef);
 
     // Check if payment was actually successful
-    if (!payment || payment.data.status !== "success") {
+    if (
+      !payment ||
+      payment.status !== true ||
+      payment.data.status !== "success"
+    ) {
       throw new Error("Payment verification failed");
     }
     const ticketCodes: string[] = [];
